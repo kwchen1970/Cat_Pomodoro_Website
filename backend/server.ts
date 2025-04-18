@@ -76,13 +76,13 @@ app.put('/api/users', (req, res) => {
 });
 
 //delete a cat from a user
-app.delete('/user/cats/:id', (req, res) => {
-  res.send('This is a delete request for cats id ${req.params.id}');
+app.delete('/api/user/cats/:id', (req, res) => {
+  res.send(`This is a delete request for cats id ${req.params.id}`);
 });
 
 //delete a user
-app.delete('/user/users/:id', (req, res) => {
-  res.send('This is a delete request for user id ${req.params.id}');
+app.delete('/api/user/users/:id', (req, res) => {
+  res.send(`This is a delete request for user id ${req.params.id}`);
 });
 
 //fetch a user by id
@@ -111,11 +111,7 @@ app.get("/api/cats/:id", async (req, res) => {
   }
 });
 //create a user if they don't exist just after logging in
-app.post("/api/users", async (req, res) => {
-  const user = req.body;
-  const uid = await addUser(user); 
-  res.status(uid ? 200 : 500).json({ uid });
-});
+
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
