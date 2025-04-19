@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import {  fetchAllUsers, fetchAllCats, fetchCatsForUser, addCatToUser, 
-  addUser,fetchUserById,fetchCatById,createUserIfNotExists} from "./firestoreUtils";
+  addUser,fetchUserById,fetchCatById,addAccessoryToCat,createUserIfNotExists} from "./firestoreUtils";
+import {Cat } from "@full-stack/types";
 const app = express();
 const port = 8080;
 

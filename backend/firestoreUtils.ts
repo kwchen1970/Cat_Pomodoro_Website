@@ -1,4 +1,5 @@
 import { db } from "./firebase"; // backend/firebase.ts using firebase-admin
+import { FieldValue } from "firebase-admin/firestore";
 import { AuthUser,User, Cat } from "@full-stack/types";
 
 // Fetch all users
@@ -63,7 +64,7 @@ export const fetchCatsForUser = async (ownerId: string): Promise<Cat[]> => {
   }));
 };
 
-//Add a new user (doc ID = uid)
+//Add a new user (doc ID = uid) do it after login so you can set uid to authUser.uid
 export const addUser = async (user: User): Promise<string | null> => {
   try {
     await db.collection("users").doc(user.uid).set(user);
@@ -80,13 +81,20 @@ export const addCatToUser = async (
 ): Promise<string | null> => {
   try {
     const ref = await db.collection("cats").add(cat);
+    await ref.update({ id: ref.id }); // manually sets the id field
     return ref.id;
   } catch (err) {
     console.error("Error adding cat:", err);
     return null;
   }
 };
-
+//adds accessory to cat
+export const addAccessoryToCat = (cat: Cat, newAccessory: string): Cat => {
+  return {
+    ...cat,
+    accessories: [...(cat.accessories || []), newAccessory],
+  };
+};
 // call after signing in using auth creates a user if it doesn't exist
 export const createUserIfNotExists = async (authUser: AuthUser): Promise<void> => {
     const userRef = db.collection("users").doc(authUser.uid);

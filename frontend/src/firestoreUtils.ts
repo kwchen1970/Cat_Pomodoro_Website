@@ -9,7 +9,8 @@ import {
     setDoc,
     query, where,
     deleteDoc,
-    updateDoc
+    updateDoc,
+    arrayUnion
   } from "firebase/firestore";
   import { db } from "../firebase";
 
@@ -96,6 +97,7 @@ export const addCatToUser = async (
   ): Promise<string | null> => {
     try {
       const docRef = await addDoc(collection(db, "cats"), catData);
+      await updateDoc(docRef, { id: docRef.id }); // sets the id field equal to docid
       return docRef.id;
     } catch (error) {
       console.error(`Error adding cat for user ${catData.ownerId}:`, error);
@@ -167,7 +169,17 @@ export const deleteUser = async (uid: string): Promise<boolean> => {
       return false;
     }
 };
-
+// add a acessory to a cat id
+export const addAccessoryToCat = async (
+  catId: string,
+  accessory: string
+): Promise<void> => {
+  const catRef = doc(db, "cats", catId);
+  await updateDoc(catRef, {
+    accessories: arrayUnion(accessory)
+  });
+  console.log(` Added accessory "${accessory}" to cat with ID ${catId}`);
+};
 //call right after signing in with authentication
 export const createUserIfNotExists = async (authUser: AuthUser) => {
   const userRef = doc(db, "users", authUser.uid);
