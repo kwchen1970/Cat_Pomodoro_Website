@@ -1,28 +1,15 @@
-import { MantineProvider } from "@mantine/core";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ErrorPage from "./pages/Error";
-import RootLayout from "./layouts/RootLayout";
-import { PATHS } from "./constants/Navigation";
-import "./index.css";
+import { useState } from "react";
+import "./App.css";
+import Home from "../src/pages/home_page"
+import LogInPage from "./pages/Login"
 
-const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <RootLayout />,
-        errorElement: <ErrorPage />,
-        children: [
-            ...PATHS.map((item) => ({
-                path: item.link,
-                element: item.element,
-            })),
-        ],
-    },
-]);
+const App = () => {
+  return (
+    <>
+     <LogInPage></LogInPage>
+     
+    </>
+  );
+};
 
-export default function App() {
-    return (
-        <MantineProvider withGlobalStyles withNormalizeCSS>
-            <RouterProvider router={router} />
-        </MantineProvider>
-    );
-}
+export default App;
