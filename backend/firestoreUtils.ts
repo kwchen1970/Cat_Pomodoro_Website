@@ -88,13 +88,59 @@ export const addCatToUser = async (
     return null;
   }
 };
-//adds accessory to cat
-export const addAccessoryToCat = (cat: Cat, newAccessory: string): Cat => {
-  return {
-    ...cat,
-    accessories: [...(cat.accessories || []), newAccessory],
-  };
+
+//update a cat
+export const updateCatById = async (updatedCat: Cat): Promise<void> => {
+  try {
+    if (!updatedCat.id) throw new Error("Missing cat ID");
+
+    const { id, ...fieldsToUpdate } = updatedCat;
+    const catRef = db.collection("cats").doc(id);
+
+    await catRef.update(fieldsToUpdate); // Updates only provided fields
+
+    console.log(`Successfully updated cat with ID: ${id}`);
+  } catch (error) {
+    console.error("Error updating cat:", error);
+    throw error; // So server.ts can handle it
+  }
 };
+
+//update a user
+export const updateUserById = async (updatedUser: User): Promise<void> => {
+  try {
+    if (!updatedUser.uid) throw new Error("Missing user UID");
+
+    const { uid, ...fieldsToUpdate } = updatedUser;
+    const userRef = db.collection("users").doc(uid);
+
+    await userRef.update(fieldsToUpdate); // Updates only the provided fields
+
+    console.log(`Successfully updated user with UID: ${uid}`);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
+//adds accessory to cat
+export const addAccessoryToCat = async (
+  catId: string,
+  accessory: string
+): Promise<void> => {
+  const catRef = db.collection("cats").doc(catId);
+  const catSnap = await catRef.get();
+
+  if (!catSnap.exists) {
+    throw new Error(`Cat with ID ${catId} not found`);
+  }
+
+  const existingAccessories = catSnap.data()?.accessories || [];
+  const updatedAccessories = [...existingAccessories, accessory];
+
+  await catRef.update({ accessories: updatedAccessories });
+};
+
 // call after signing in using auth creates a user if it doesn't exist
 export const createUserIfNotExists = async (authUser: AuthUser): Promise<void> => {
     const userRef = db.collection("users").doc(authUser.uid);
