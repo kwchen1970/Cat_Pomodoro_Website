@@ -11,6 +11,9 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log(`Logged in as: ${user.displayName} (${user.email})`);
       navigate("/home"); // make sure you have this route set up later
     } catch (err) {
       console.error("Login error", err);
