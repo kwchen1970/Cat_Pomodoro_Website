@@ -1,28 +1,48 @@
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "../../firebase";
+import { useEffect, useState } from "react";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import "../App.css"; // or remove if not needed
+import { auth } from "../../firebase";
+import "../App.css"; // optional
 
 const provider = new GoogleAuthProvider();
 
 const Login = () => {
   const navigate = useNavigate();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate("/home");
+      } else {
+        setCheckingAuth(false); // ✅ only show login UI if NOT logged in
+      }
+    });
+    return unsubscribe;
+  }, [navigate]);
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       console.log(`Logged in as: ${user.displayName} (${user.email})`);
-      navigate("/home"); // make sure you have this route set up later
+      navigate("/home");
     } catch (err) {
       console.error("Login error", err);
     }
   };
 
   const handleGuestLogin = () => {
-    navigate("/home"); // or whatever page you want
+    navigate("/home");
   };
+
+  if (checkingAuth) {
+    return <div>Loading...</div>; // or a spinner/loading UI
+  }
 
   return (
     <div style={{ textAlign: "center", marginTop: "20vh", fontFamily: "Roboto, sans-serif" }}>
@@ -63,4 +83,3 @@ const Login = () => {
 };
 
 export default Login;
-

@@ -1,6 +1,6 @@
 import Weather from "../pages/Weather";
 import Counter from "../pages/Counter";
-import HomePage from "../pages/Home";
+import Home from "../pages/Home";
 import Timer from "../pages/Timer";
 
 /**
@@ -23,11 +23,6 @@ export const PATHS: {
     element?: JSX.Element;
 }[] = [
     {
-        link: "/",
-        label: "Home",
-        element: <HomePage />,
-    },
-    {
         link: "/weather",
         label: "Weather",
         element: <Weather />,
@@ -42,4 +37,9 @@ export const PATHS: {
         label: "Timer",
         element: <Timer />,
     },
+    {
+        link: "/home",
+        label: "Home",
+        element: <Home />,
+    }
 ];

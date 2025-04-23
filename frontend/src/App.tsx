@@ -1,15 +1,25 @@
-import { useState } from "react";
-import "./App.css";
-import Home from "../src/pages/home_page"
-import LogInPage from "./pages/Login"
+import { Routes, Route } from "react-router-dom";
+import RootLayout from "./layouts/RootLayout";
+import { PATHS } from "./constants/Navigation";
+import Login from "./pages/Login";
 
-const App = () => {
+export default function App() {
   return (
-    <>
-     <LogInPage></LogInPage>
-     
-    </>
-  );
-};
+    <Routes>
+      {/* Login route at / */}
+      <Route path="/" element={<Login />} />
 
-export default App;
+      {/* RootLayout routes */}
+      <Route element={<RootLayout />}>
+        {PATHS.map((page) => (
+          <Route
+            key={page.link}
+            path={page.link.slice(1)} // e.g. "/home" → "home"
+            element={page.element}
+          />
+        ))}
+      </Route>
+    </Routes>
+  );
+}
+
