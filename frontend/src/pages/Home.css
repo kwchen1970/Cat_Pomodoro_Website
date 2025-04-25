@@ -42,4 +42,10 @@
     color: #333;
     text-align: center;
     margin-bottom: 1rem;
+    margin-top: 0;
+  }
+  .hello-text {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 0.2rem;
   }

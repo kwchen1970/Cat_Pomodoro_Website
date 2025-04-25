@@ -1,0 +1,98 @@
+.timer-container {
+    background-color: #fff8e1;
+    height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .progress-ring {
+    transform: rotate(-90deg);
+    overflow: visible;
+  }
+  .circle-wrapper {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-bg,
+  .ring-progress {
+    fill: none;
+    stroke-width: 16;
+  }
+  
+  .ring-bg {
+    stroke: #eee;
+  }
+  
+  .ring-progress {
+    stroke: hotpink;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.3s linear;
+  }
+  
+  .time-text {
+    fill: #7b3f00;
+    font-size: 3rem;
+    font-family: 'Courier New', monospace;
+    transform: rotate(90deg); /* fix the flipped text from svg rotate */
+  }
+  
+  .timer-display {
+    font-family: 'Courier New', monospace;
+    font-size: 6rem;
+    color: #7B3F00;
+    margin-bottom: 2rem;
+  }
+  .time-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #7b3f00;
+    font-size: 3rem;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    z-index: 1;
+    line-height: 1;
+  }
+  
+  .timer-button {
+    padding: 12px 24px;
+    font-size: 1.25rem;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .timer-page {
+    display: flex;
+    height: 100dvh;
+    width: 100%;
+    background-color: #fff8e1;
+  }
+  
+  .timer-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    justify-content: center; 
+    gap: 2em;
+  }
+  
+  .timer-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* You can add your cat image here later */
+  }
+
+  

@@ -7,6 +7,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import "../App.css"; // optional
+import "./Login.css";
+import peekingCat from "../assets/crouching.png" ;
 
 const provider = new GoogleAuthProvider();
 
@@ -19,7 +21,7 @@ const Login = () => {
       if (user) {
         navigate("/home");
       } else {
-        setCheckingAuth(false); // ✅ only show login UI if NOT logged in
+        setCheckingAuth(false);
       }
     });
     return unsubscribe;
@@ -41,43 +43,56 @@ const Login = () => {
   };
 
   if (checkingAuth) {
-    return <div>Loading...</div>; // or a spinner/loading UI
+    return <div>Loading...</div>;
   }
 
   return (
-    <div style={{ textAlign: "center", marginTop: "20vh", fontFamily: "Roboto, sans-serif" }}>
-      <h1 style={{ fontSize: "2rem" }}>Welcome to Cat Pomodoro!</h1>
-      <button
-        onClick={handleGoogleLogin}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          margin: "10px",
-          backgroundColor: "#4285F4",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Sign in with Google
-      </button>
-      <br />
-      <button
-        onClick={handleGuestLogin}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          marginTop: "10px",
-          backgroundColor: "#999",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Continue as Guest
-      </button>
+    <div
+      style={{
+        backgroundColor: "#FFE6EB",
+        minHeight: "100vh",
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        fontFamily: "Roboto, sans-serif",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <h1 className="welcome-text">Welcome to Cat Pomodoro!</h1>
+        <button
+          onClick={handleGoogleLogin}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            margin: "10px",
+            backgroundColor: "#4285F4",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Sign in with Google
+        </button>
+        <br />
+        <button
+          onClick={handleGuestLogin}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            marginTop: "10px",
+            backgroundColor: "#999",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Continue as Guest
+        </button>
+      </div>
+      <img src={peekingCat} alt="cat" className="crouching-cat" />
     </div>
   );
 };
