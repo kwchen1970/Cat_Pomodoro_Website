@@ -14,7 +14,7 @@ export default function App() {
         {PATHS.map((page) => (
           <Route
             key={page.link}
-            path={page.link.slice(1)} // e.g. "/home" → "home"
+            path={page.link.slice(1)}
             element={page.element}
           />
         ))}

@@ -15,6 +15,7 @@ const provider = new GoogleAuthProvider();
 const Login = () => {
   const navigate = useNavigate();
   const [checkingAuth, setCheckingAuth] = useState(true);
+  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -31,6 +32,19 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      const authUser = {
+        uid: user.uid,
+        name: user.displayName || "No Name",
+        username: user.email?.split("@")[0] || `user_${user.uid}`,
+        profile_pic: user.photoURL || "", // fallback if no image
+        hours_studied: 0, // default starting value
+      };
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/auth_create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(authUser),
+      });
+
       console.log(`Logged in as: ${user.displayName} (${user.email})`);
       navigate("/home");
     } catch (err) {

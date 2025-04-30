@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import catGif from "../assets/cat1.gif";
+import userIcon from "../assets/user.png";
 import Buttons from "../components/Start_Button";
 import { auth } from "../../firebase";
 import "./Home.css";
@@ -41,7 +42,9 @@ const Home = () => {
         <h4 className="ready-text">Ready to Focus?</h4>
         <Buttons />
       </div>
-
+      <button className="profile-button" onClick={() => navigate("/profile")}>
+          <img src={userIcon} alt="Profile" className="profile-icon" />
+      </button>
       <div style={{ display: "flex", justifyContent: "center" }}>
         <img src={catGif} alt="focus animation" className="cat-image" />
       </div>
