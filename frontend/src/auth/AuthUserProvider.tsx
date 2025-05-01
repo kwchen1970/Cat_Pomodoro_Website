@@ -1,45 +1,43 @@
-import { User } from "firebase/auth";
+import { User, onAuthStateChanged } from "firebase/auth";
 import {
   createContext,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
+  useState,
+  ReactNode,
 } from "react";
 import { auth } from "../../firebase";
 
-type AuthData = {
-  user?: User | null;
+type AuthContext = {
+  user: User | null;
+  checkingAuth: boolean;
 };
 
-const AuthUserContext = createContext<AuthData>({ user: null });
+const AuthUserContext = createContext<AuthContext>({
+  user: null,
+  checkingAuth: true,
+});
 
-export default function AuthUserProvider({
-  children,
-}: {
-  readonly children: ReactNode;
-}) {
-  const [user, setUser] = useState<AuthData>({ user: null });
+export function AuthUserProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
   useEffect(() => {
-    auth.onAuthStateChanged(async (userAuth) => {
-      // What should happen when the auth changes?
-      if (userAuth) {
-        setUser({ user: userAuth });
-      } else {
-        setUser({ user: null });
-      }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log("🔥 Firebase auth state changed:", firebaseUser);
+      setUser(firebaseUser ?? null);
+      setCheckingAuth(false); // ✅ Always flip to false
     });
+
+    return () => unsubscribe();
   }, []);
 
   return (
-    <AuthUserContext.Provider value={user}>{children}</AuthUserContext.Provider>
+    <AuthUserContext.Provider value={{ user, checkingAuth }}>
+      {children}
+    </AuthUserContext.Provider>
   );
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthUserContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthUserProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthUserContext);
+
