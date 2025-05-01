@@ -1,8 +1,13 @@
-*{
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+  *{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  .btn {
+    font-family: 'QuickSand';
+  }
+
 .home-container {
     background-color: #fff8e1;
     height: 100dvh; 
@@ -10,6 +15,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
     overflow: hidden;
   }
   
@@ -23,8 +29,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0;
     text-align: center;
+    padding: 0;
   }
   
   .cat-image {
@@ -35,15 +42,15 @@
   .logout-button {
     padding: 8px 16px;
     font-size: 14px;
-    background-color: #dc3545;
+    background-color: #9a9691;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
   }
   .ready-text {
-    font-family: 'Supermercado One', cursive;
-    font-size: 3rem;
+    font-family: 'QuickSand';
+    font-size: 2rem;
     color: #333;
     text-align: center;
     margin-bottom: 1rem;
@@ -54,6 +61,11 @@
     text-align: center;
     margin-bottom: 0.2rem;
   }
+
+  .main-title {
+    font-size: 3rem;
+  }
+
   .profile-button {
     background: none;
     border: none;
@@ -65,8 +77,8 @@
   }
   
   .profile-icon {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     transition: transform 0.2s ease;
   }

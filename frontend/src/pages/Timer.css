@@ -31,11 +31,11 @@
   }
   
   .ring-bg {
-    stroke: #eee;
+    stroke: #444343;
   }
   
   .ring-progress {
-    stroke: hotpink;
+    stroke: rgb(228, 74, 74);
     stroke-linecap: round;
     transition: stroke-dashoffset 0.3s linear;
   }
@@ -43,12 +43,12 @@
   .time-text {
     fill: #7b3f00;
     font-size: 3rem;
-    font-family: 'Courier New', monospace;
+    font-family: 'QuickSand';
     transform: rotate(90deg); /* fix the flipped text from svg rotate */
   }
   
   .timer-display {
-    font-family: 'Courier New', monospace;
+    font-family: 'QuickSand';
     font-size: 6rem;
     color: #7B3F00;
     margin-bottom: 2rem;
@@ -60,7 +60,7 @@
     transform: translate(-50%, -50%);
     color: #7b3f00;
     font-size: 3rem;
-    font-family: 'Courier New', monospace;
+    font-family: 'QuickSand';
     text-align: center;
     z-index: 1;
     line-height: 1;
@@ -69,11 +69,12 @@
   .timer-button {
     padding: 12px 24px;
     font-size: 1.25rem;
-    background-color: #dc3545;
+    background-color: #e08e8e;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    font-family: 'QuickSand';
   }
   .timer-page {
     display: flex;

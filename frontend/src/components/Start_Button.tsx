@@ -13,7 +13,7 @@ const Buttons = () => {
       style={{
         padding: "12px 24px",
         fontSize: "16px",
-        backgroundColor: "#4caf50",
+        backgroundColor: "#736d5c",
         color: "white",
         border: "none",
         borderRadius: "6px",

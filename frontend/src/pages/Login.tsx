@@ -69,7 +69,7 @@ const Login = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        fontFamily: "Roboto, sans-serif",
+        fontFamily: "QuickSand",
       }}
     >
       <div style={{ textAlign: "center" }}>

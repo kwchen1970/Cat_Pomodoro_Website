@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import catGif from "../assets/cat1.gif";
+import sidecat1 from "../assets/sidecat1.gif";
 import userIcon from "../assets/user.png";
 import Buttons from "../components/Start_Button";
 import { auth } from "../../firebase";
@@ -39,14 +39,18 @@ const Home = () => {
 
       <div className="main-content">
         <h2 className="ready-text">Hello{firstName ? `, ${firstName}` : ""}!</h2>
-        <h4 className="ready-text">Ready to Focus?</h4>
+        <h4 className="ready-text main-title">Ready to Focus?</h4>
         <Buttons />
       </div>
       <button className="profile-button" onClick={() => navigate("/profile")}>
           <img src={userIcon} alt="Profile" className="profile-icon" />
       </button>
       <div style={{ display: "flex", justifyContent: "center" }}>
-        <img src={catGif} alt="focus animation" className="cat-image" />
+        <img src={sidecat1} alt="focus animation" className="cat-image" />
+        <img src={sidecat1} alt="focus animation" className="cat-image" />
+        <img src={sidecat1} alt="focus animation" className="cat-image" />
+        <img src={sidecat1} alt="focus animation" className="cat-image" />
+        <img src={sidecat1} alt="focus animation" className="cat-image" />
       </div>
     </div>
   );
