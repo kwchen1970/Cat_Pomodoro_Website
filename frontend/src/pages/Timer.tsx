@@ -40,6 +40,31 @@ const Timer = () => {
           const nextIsBreak = !isBreak;
           setIsBreak(nextIsBreak);
           setTimeLeft(nextIsBreak ? 5 * 60 : 25 * 60);
+
+          //cat logic 
+          if (!isBreak && user && cats.length > 0) {
+            const lockedCats = cats.filter(
+              (cat) => !unlockedCatIds.includes(cat.id)
+            );
+          
+            if (lockedCats.length > 0) {
+              const randomCat =
+                lockedCats[Math.floor(Math.random() * lockedCats.length)];
+          
+              // call your backend to add this cat to the user's unlocked list
+              fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ catId: randomCat.id, action: "add" }),
+              })
+                .then((res) => res.json())
+                .then(() => {
+                  //update the frontend view immediately
+                  setUnlockedCatIds((prev) => [...prev, randomCat.id]);
+                })
+                .catch((err) => console.error("Failed to unlock cat:", err));
+            }
+          }
         } else {
           setTimeLeft(remaining);
         }
@@ -91,16 +116,39 @@ useEffect(() => {
         // Simulate the end of a session
         setTimeLeft(0);
         setIsRunning(false);
+        // Simulate full session completion
+      if (!isBreak && user && cats.length > 0) {
+        const lockedCats = cats.filter(
+          (cat) => !unlockedCatIds.includes(cat.id)
+        );
+
+        if (lockedCats.length > 0) {
+          const randomCat =
+            lockedCats[Math.floor(Math.random() * lockedCats.length)];
+
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ catId: randomCat.id, action: "add" }),
+          })
+            .then((res) => res.json())
+            .then(() => {
+              setUnlockedCatIds((prev) => [...prev, randomCat.id]);
+              console.log("Unlocked cat via demo key:", randomCat.id);
+            })
+            .catch((err) => console.error("Failed to unlock cat:", err));
+        }
+      }
   
-        // Alternate to next session
-        setIsBreak((prev) => !prev);
-        setTimeLeft(!isBreak ? 5 * 60 : 25 * 60); // switch to next session duration
+      // Alternate to next session
+      setIsBreak((prev) => !prev);
+      setTimeLeft(!isBreak ? 5 * 60 : 25 * 60); // switch to next session duration
       }
     };
   
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [isBreak]);
+  }, [isBreak,user, cats, unlockedCatIds]);
 
   const formatTime = (seconds: number) => {
     const min = Math.floor(seconds / 60);
@@ -123,89 +171,91 @@ useEffect(() => {
     setIsRunning((prev) => !prev);
   };
 
-  return (
+return (
     <div
-    className="timer-background"
-    style={{
-      backgroundImage: `url(${timerBackground})`,
-    }}
-  >
-<div className="background-overlay" />
-<div className="timer-page">
-  {/* Left - Timer */}
-  <div className="timer-left">
-    <div className="timer-center">
-    <div className="circle-wrapper">
-      <svg className="progress-ring" width="300" height="300">
-        <circle className="ring-bg" cx="150" cy="150" r="130" />
-        <circle
-          className="ring-progress"
-          cx="150"
-          cy="150"
-          r="130"
-          strokeDasharray="816.8"
-          strokeDashoffset={816.8 * (1 - getProgress())}
-        />
-      </svg>
-      <div className="timer-circle-background" />
-      <div className="time-overlay">{formatTime(timeLeft)}</div>
-    </div>
-    <button className="timer-button" onClick={toggleIsRunning}>
-            {isRunning ? "Restart" : "Start"}
-        </button>
-    </div>
-  </div>
-
-  {/* Middle - Big Cat */}
-  <div className="timer-cat">
-    {selectedCat && selectedCat.accessories.length > 0 && (
-      <img
-        src={`/grey_cream_cat/${selectedCat.accessories[0]}`}
-        alt={selectedCat.accessories[0]}
-        className="cat-accessory-img"
-      />
-    )}
-  </div>
-
-  {/* Right - Sidebar */}
-  <div className="timer-sidebar">
-  <div className="cat-sidebar">
-    {cats.map((cat) => {
-      const isUnlocked = unlockedCatIds.includes(cat.id);
-
-      return (
-        <button
-          key={cat.id}
-          className={`cat-card ${!isUnlocked ? "locked" : ""}`}
-          disabled={!isUnlocked}
-          onClick={() => isUnlocked && setSelectedCat(cat)}
-        >
-          <div className="cat-card-inner">
-            {cat.accessories.length > 0 ? (
+      className="timer-background"
+      style={{
+        backgroundImage: `url(${timerBackground})`,
+      }}
+    >
+      <div className="background-overlay" />
+  
+      <div className="timer-content-wrapper">
+        <div className="timer-page">
+          {/* Left - Timer */}
+          <div className="timer-left">
+            <div className="timer-center">
+              <div className="circle-wrapper">
+                <svg className="progress-ring" width="300" height="300">
+                  <circle className="ring-bg" cx="150" cy="150" r="130" />
+                  <circle
+                    className="ring-progress"
+                    cx="150"
+                    cy="150"
+                    r="130"
+                    strokeDasharray="816.8"
+                    strokeDashoffset={816.8 * (1 - getProgress())}
+                  />
+                </svg>
+                <div className="timer-circle-background" />
+                <div className="time-overlay">{formatTime(timeLeft)}</div>
+              </div>
+              <button className="timer-button" onClick={toggleIsRunning}>
+                {isRunning ? "Restart" : "Start"}
+              </button>
+            </div>
+          </div>
+  
+          {/* Middle - Big Cat */}
+          <div className="timer-cat">
+            {selectedCat && selectedCat.accessories.length > 0 && (
               <img
-                src={`/grey_cream_cat/${cat.accessories[0]}`}
-                alt={cat.accessories[0]}
+                src={`/grey_cream_cat/${selectedCat.accessories[0]}`}
+                alt={selectedCat.accessories[0]}
                 className="cat-accessory-img"
               />
-            ) : (
-              <div className="cat-placeholder">{cat.name}</div>
-            )}
-
-            {!isUnlocked && (
-              <div className="lock-overlay">
-                <img src={lockIcon} alt="Locked" className="lock-icon" />
-              </div>
             )}
           </div>
-        </button>
-      );
-    })}
-  </div>
-</div>
-
-</div>
-</div>
-);
+  
+          {/* Right - Sidebar */}
+          <div className="timer-sidebar">
+            <div className="cat-sidebar">
+              {cats.map((cat) => {
+                const isUnlocked = unlockedCatIds.includes(cat.id);
+  
+                return (
+                  <button
+                    key={cat.id}
+                    className={`cat-card ${!isUnlocked ? "locked" : ""}`}
+                    disabled={!isUnlocked}
+                    onClick={() => isUnlocked && setSelectedCat(cat)}
+                  >
+                    <div className="cat-card-inner">
+                      {cat.accessories.length > 0 ? (
+                        <img
+                          src={`/grey_cream_cat/${cat.accessories[0]}`}
+                          alt={cat.accessories[0]}
+                          className="cat-accessory-img"
+                        />
+                      ) : (
+                        <div className="cat-placeholder">{cat.name}</div>
+                      )}
+  
+                      {!isUnlocked && (
+                        <div className="lock-overlay">
+                          <img src={lockIcon} alt="Locked" className="lock-icon" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   
 };
 

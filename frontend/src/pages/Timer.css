@@ -80,7 +80,6 @@
     display: flex;
     height: 100dvh;
     width: 100%;
-    /* background-color: #fff8e1; */
   }
 
   .timer-right {
@@ -224,4 +223,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+.timer-content-wrapper {
+  position: relative;
+  z-index: 1; 
 }

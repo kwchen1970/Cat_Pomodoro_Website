@@ -9,6 +9,7 @@ import { auth } from "../../firebase";
 import "../App.css"; // optional
 import "./Login.css";
 import peekingCat from "../assets/crouching.png" ;
+import loginBackground from "../assets/login_background.png";
 
 const provider = new GoogleAuthProvider();
 
@@ -62,53 +63,53 @@ const Login = () => {
 
   return (
     <div
-      style={{
-        backgroundColor: "#FFE6EB",
-        minHeight: "100vh",
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "QuickSand",
-      }}
+      className="login-background"
+      style={{ backgroundImage: `url(${loginBackground})` }}
     >
-      <div style={{ textAlign: "center" }}>
-        <h1 className="welcome-text">Welcome to Cat Pomodoro!</h1>
-        <button
-          onClick={handleGoogleLogin}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            margin: "10px",
-            backgroundColor: "#4285F4",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Sign in with Google
-        </button>
-        <br />
-        <button
-          onClick={handleGuestLogin}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            marginTop: "10px",
-            backgroundColor: "#999",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Continue as Guest
-        </button>
+      <div className="background-overlay" />
+      
+      <div className="login-content">
+        <div className="login-box">
+          <h1 className="welcome-text">Welcome to Cat Pomodoro!</h1>
+  
+          <button
+            onClick={handleGoogleLogin}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              margin: "10px",
+              backgroundColor: "#4285F4",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Sign in with Google
+          </button>
+          <br />
+          <button
+            onClick={handleGuestLogin}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              marginTop: "10px",
+              backgroundColor: "#999",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Continue as Guest
+          </button>
+        </div>
       </div>
+  
       <img src={peekingCat} alt="cat" className="crouching-cat" />
     </div>
   );
+  
 };
 
 export default Login;
