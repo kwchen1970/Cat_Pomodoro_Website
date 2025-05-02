@@ -31,6 +31,7 @@ export const fetchUserById = async (uid: string): Promise<User | null> => {
       username: data.username,
       profile_pic: data.profile_pic,
       hours_studied: data.hours_studied,
+      unlocked: data.unlocked
     };
   };
 // Fetch a cat by ID
@@ -153,6 +154,7 @@ export const createUserIfNotExists = async (authUser: AuthUser): Promise<void> =
         username: authUser.email?.split("@")[0] ?? "unknown",
         profile_pic: authUser.profile_pic ?? "",
         hours_studied: 0,
+        unlocked: [],
       };
   
       await userRef.set(newUser);

@@ -5,6 +5,7 @@ export type User = {
     username: string;
     profile_pic: string;
     hours_studied:number;
+    unlocked: string[];
   };
   
 export type Cat = {

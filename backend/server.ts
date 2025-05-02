@@ -1,6 +1,7 @@
 import express from "express";
 import { db } from "./firebase";
 import cors from "cors";
+import admin from "firebase-admin";
 import {  fetchAllUsers, fetchAllCats, fetchCatsForUser, addCatToUser, 
   addUser,fetchUserById,fetchCatById,updateCatById,updateUserById,addAccessoryToCat,createUserIfNotExists} from "./firestoreUtils";
 import {Cat,AuthUser} from "@full-stack/types";
@@ -9,6 +10,29 @@ const port = 8080;
 
 app.use(cors());
 app.use(express.json());
+
+//edit the unlocked cats
+app.put("/api/users/:uid/unlocked", async (req, res) => {
+  const { uid } = req.params;
+  const { catId, action } = req.body;
+
+  if (!catId || !["add", "remove"].includes(action)) {
+    res.status(400).json({ error: "Missing or invalid catId action" });
+  }
+
+  try {
+    const userRef = db.collection("users").doc(uid);
+    const update = action === "add"
+      ? { unlocked: admin.firestore.FieldValue.arrayUnion(catId) }
+      : { unlocked: admin.firestore.FieldValue.arrayRemove(catId) };
+
+    await userRef.update(update);
+    res.status(200).json({ message: `Cat ${catId} ${action}ed for user ${uid}` });
+  } catch (error) {
+    console.error(`Failed to ${action} cat ${catId}:`, error);
+    res.status(500).json({ error: `Failed to ${action} cat` });
+  }
+});
 
 //getting all the users
 app.get("/api/users", async (req, res) => {

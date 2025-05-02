@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import "./Timer.css";
+import { useAuth } from "../auth/AuthUserProvider";
+import lockIcon from "../assets/cute_lock.png";
+import timerBackground from "../assets/timerbackground.png";
 
 export type Cat = {
   id: string;
@@ -11,11 +14,16 @@ export type Cat = {
 };
 
 const Timer = () => {
-  const initialTime = 25 * 60;
-  const [timeLeft, setTimeLeft] = useState(initialTime);
+  const [isBreak, setIsBreak] = useState(false);
+  const { user,checkingAuth } = useAuth();
+  const getInitialTime = () => (isBreak ? 5 * 60 : 25 * 60);
+  const [timeLeft, setTimeLeft] = useState(getInitialTime());
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [cats, setCats] = useState<Cat[]>([]);
+  const [unlockedCatIds, setUnlockedCatIds] = useState<string[]>([]);
+  const [selectedCat, setSelectedCat] = useState<Cat | null>(null);
+  
 
   // Timer logic
   useEffect(() => {
@@ -24,28 +32,75 @@ const Timer = () => {
     if (isRunning && startTime !== null) {
       interval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const remaining = initialTime - elapsed;
-        setTimeLeft(remaining > 0 ? remaining : 0);
+        const sessionLength = getInitialTime(); 
+        const remaining = sessionLength - elapsed;
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          setIsRunning(false); 
+          const nextIsBreak = !isBreak;
+          setIsBreak(nextIsBreak);
+          setTimeLeft(nextIsBreak ? 5 * 60 : 25 * 60);
+        } else {
+          setTimeLeft(remaining);
+        }
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, startTime]);
+  }, [isRunning, startTime, isBreak]);
 
-  // Fetch all cats
+// 1. Fetch user data and unlocked cat IDs
+useEffect(() => {
+  if (checkingAuth || !user) return;
+
+  const fetchUserData = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}`);
+      const data = await res.json();
+      setUnlockedCatIds(data.unlocked || []);
+    } catch (err) {
+      console.error("Error fetching user data", err);
+    }
+  };
+
+  fetchUserData();
+}, [checkingAuth, user]);
+
+
+// 2. Fetch all cats
+useEffect(() => {
+  const fetchCats = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cats`);
+      const data = await res.json();
+      setCats(data);
+    } catch (err) {
+      console.error("Failed to fetch cats", err);
+    }
+  };
+
+  fetchCats();
+  }, []);
+
+  //Demo shortcut
   useEffect(() => {
-    const fetchCats = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cats`);
-        const data = await res.json();
-        setCats(data);
-      } catch (error) {
-        console.error("Failed to fetch cats", error);
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "d") {
+        console.log("⏱ Demo key pressed");
+  
+        // Simulate the end of a session
+        setTimeLeft(0);
+        setIsRunning(false);
+  
+        // Alternate to next session
+        setIsBreak((prev) => !prev);
+        setTimeLeft(!isBreak ? 5 * 60 : 25 * 60); // switch to next session duration
       }
     };
-
-    fetchCats();
-  }, []);
+  
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isBreak]);
 
   const formatTime = (seconds: number) => {
     const min = Math.floor(seconds / 60);
@@ -56,18 +111,26 @@ const Timer = () => {
   const getProgress = () => {
     if (!startTime) return 0;
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    const progress = Math.min(elapsed / initialTime, 1);
+    const progress = Math.min(elapsed / getInitialTime(), 1);
     return progress;
   };
 
   const toggleIsRunning = () => {
     if (!isRunning) {
       setStartTime(Date.now());
+      setTimeLeft(getInitialTime());
     }
     setIsRunning((prev) => !prev);
   };
 
   return (
+    <div
+    className="timer-background"
+    style={{
+      backgroundImage: `url(${timerBackground})`,
+    }}
+  >
+<div className="background-overlay" />
 <div className="timer-page">
   {/* Left - Timer */}
   <div className="timer-left">
@@ -84,6 +147,7 @@ const Timer = () => {
           strokeDashoffset={816.8 * (1 - getProgress())}
         />
       </svg>
+      <div className="timer-circle-background" />
       <div className="time-overlay">{formatTime(timeLeft)}</div>
     </div>
     <button className="timer-button" onClick={toggleIsRunning}>
@@ -94,29 +158,54 @@ const Timer = () => {
 
   {/* Middle - Big Cat */}
   <div className="timer-cat">
-    <img src="/your_cat_image.png" alt="Big Cat" className="big-cat" />
+    {selectedCat && selectedCat.accessories.length > 0 && (
+      <img
+        src={`/grey_cream_cat/${selectedCat.accessories[0]}`}
+        alt={selectedCat.accessories[0]}
+        className="cat-accessory-img"
+      />
+    )}
   </div>
 
   {/* Right - Sidebar */}
   <div className="timer-sidebar">
-    <div className="cat-sidebar">
-      {cats.map((cat) => (
-        <button key={cat.id} className="cat-card">
-          {cat.accessories.length > 0 ? (
-            <img
-              src={`/grey_cream_cat/${cat.accessories[0]}`}
-              alt={cat.accessories[0]}
-              className="cat-accessory-img"
-            />
-          ) : (
-            <div className="cat-placeholder">{cat.name}</div>
-          )}
+  <div className="cat-sidebar">
+    {cats.map((cat) => {
+      const isUnlocked = unlockedCatIds.includes(cat.id);
+
+      return (
+        <button
+          key={cat.id}
+          className={`cat-card ${!isUnlocked ? "locked" : ""}`}
+          disabled={!isUnlocked}
+          onClick={() => isUnlocked && setSelectedCat(cat)}
+        >
+          <div className="cat-card-inner">
+            {cat.accessories.length > 0 ? (
+              <img
+                src={`/grey_cream_cat/${cat.accessories[0]}`}
+                alt={cat.accessories[0]}
+                className="cat-accessory-img"
+              />
+            ) : (
+              <div className="cat-placeholder">{cat.name}</div>
+            )}
+
+            {!isUnlocked && (
+              <div className="lock-overlay">
+                <img src={lockIcon} alt="Locked" className="lock-icon" />
+              </div>
+            )}
+          </div>
         </button>
-      ))}
-    </div>
+      );
+    })}
   </div>
 </div>
-  );
+
+</div>
+</div>
+);
   
 };
 
