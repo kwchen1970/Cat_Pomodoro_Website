@@ -20,6 +20,7 @@ const Home = () => {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem("guestUnlockedCats");
       await signOut(auth);
       console.log("Logged out");
       navigate("/");

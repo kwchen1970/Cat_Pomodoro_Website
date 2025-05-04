@@ -31,6 +31,7 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
+      localStorage.removeItem("guestUnlockedCats");
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const authUser = {

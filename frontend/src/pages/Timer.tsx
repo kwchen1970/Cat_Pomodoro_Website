@@ -14,8 +14,9 @@ export type Cat = {
 };
 
 const Timer = () => {
-  const [isBreak, setIsBreak] = useState(false);
+  const [isBreak, setIsBreak] = useState<boolean>(false);
   const { user,checkingAuth } = useAuth();
+  const isGuest = !user;
   const getInitialTime = () => (isBreak ? 5 * 60 : 25 * 60);
   const [timeLeft, setTimeLeft] = useState(getInitialTime());
   const [isRunning, setIsRunning] = useState(false);
@@ -23,8 +24,24 @@ const Timer = () => {
   const [cats, setCats] = useState<Cat[]>([]);
   const [unlockedCatIds, setUnlockedCatIds] = useState<string[]>([]);
   const [selectedCat, setSelectedCat] = useState<Cat | null>(null);
+  // Guest logic
+  useEffect(() => {
+    if (isGuest && cats.length > 0) {
+      const savedUnlocked = localStorage.getItem("guestUnlockedCats");
+      if (savedUnlocked) {
+        try {
+          const parsed = JSON.parse(savedUnlocked);
+          if (Array.isArray(parsed)) {
+            setUnlockedCatIds(parsed);
+          }
+        } catch (e) {
+          console.error("Failed to parse guestUnlockedCats:", e);
+        }
+      }
+    }
+  }, [isGuest, cats]);  // Wait for cats to be loaded
   
-
+  
   // Timer logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -37,12 +54,13 @@ const Timer = () => {
         if (remaining <= 0) {
           setTimeLeft(0);
           setIsRunning(false); 
-          const nextIsBreak = !isBreak;
-          setIsBreak(nextIsBreak);
-          setTimeLeft(nextIsBreak ? 5 * 60 : 25 * 60);
+          const nextBreakState = !isBreak;
+          setIsBreak(nextBreakState);
+          setTimeLeft(nextBreakState ? 5 * 60 : 25 * 60);
+
 
           //cat logic 
-          if (!isBreak && user && cats.length > 0) {
+          if (!isBreak && cats.length > 0) {
             const lockedCats = cats.filter(
               (cat) => !unlockedCatIds.includes(cat.id)
             );
@@ -51,20 +69,27 @@ const Timer = () => {
               const randomCat =
                 lockedCats[Math.floor(Math.random() * lockedCats.length)];
           
-              // call your backend to add this cat to the user's unlocked list
-              fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ catId: randomCat.id, action: "add" }),
-              })
-                .then((res) => res.json())
-                .then(() => {
-                  //update the frontend view immediately
-                  setUnlockedCatIds((prev) => [...prev, randomCat.id]);
+              if (isGuest) {
+                // Save to localStorage
+                const updated = [...unlockedCatIds, randomCat.id];
+                setUnlockedCatIds(updated);
+                localStorage.setItem("guestUnlockedCats", JSON.stringify(updated));
+              } else {
+                //Normal user logic
+                fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ catId: randomCat.id, action: "add" }),
                 })
-                .catch((err) => console.error("Failed to unlock cat:", err));
+                  .then((res) => res.json())
+                  .then(() => {
+                    setUnlockedCatIds((prev) => [...prev, randomCat.id]);
+                  })
+                  .catch((err) => console.error("Failed to unlock cat:", err));
+              }
             }
           }
+          
         } else {
           setTimeLeft(remaining);
         }
@@ -111,44 +136,50 @@ useEffect(() => {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "d") {
-        console.log("⏱ Demo key pressed");
-  
+        console.log("Demo key pressed");
+      
         // Simulate the end of a session
         setTimeLeft(0);
         setIsRunning(false);
-        // Simulate full session completion
-      if (!isBreak && user && cats.length > 0) {
-        const lockedCats = cats.filter(
-          (cat) => !unlockedCatIds.includes(cat.id)
-        );
-
-        if (lockedCats.length > 0) {
-          const randomCat =
-            lockedCats[Math.floor(Math.random() * lockedCats.length)];
-
-          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ catId: randomCat.id, action: "add" }),
-          })
-            .then((res) => res.json())
-            .then(() => {
-              setUnlockedCatIds((prev) => [...prev, randomCat.id]);
-              console.log("Unlocked cat via demo key:", randomCat.id);
-            })
-            .catch((err) => console.error("Failed to unlock cat:", err));
+      
+        const nextBreakState = !isBreak;
+        setIsBreak(nextBreakState);
+        setTimeLeft(nextBreakState ? 5 * 60 : 25 * 60);
+      
+        // Cat unlock logic (if just finished work session)
+        if (!isBreak && cats.length > 0) {
+          const lockedCats = cats.filter(cat => !unlockedCatIds.includes(cat.id));
+      
+          if (lockedCats.length > 0) {
+            const randomCat = lockedCats[Math.floor(Math.random() * lockedCats.length)];
+      
+            if (!user) {
+              const updated = [...unlockedCatIds, randomCat.id];
+              setUnlockedCatIds(updated);
+              localStorage.setItem("guestUnlockedCats", JSON.stringify(updated));
+              console.log("Unlocked cat via demo key (guest):", randomCat.id);
+            } else {
+              fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ catId: randomCat.id, action: "add" }),
+              })
+                .then((res) => res.json())
+                .then(() => {
+                  setUnlockedCatIds((prev) => [...prev, randomCat.id]);
+                  console.log("Unlocked cat via demo key (user):", randomCat.id);
+                })
+                .catch((err) => console.error("Failed to unlock cat:", err));
+            }
+          }
         }
-      }
-  
-      // Alternate to next session
-      setIsBreak((prev) => !prev);
-      setTimeLeft(!isBreak ? 5 * 60 : 25 * 60); // switch to next session duration
       }
     };
   
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [isBreak,user, cats, unlockedCatIds]);
+  }, [isBreak, user, cats, unlockedCatIds]);
+  
 
   const formatTime = (seconds: number) => {
     const min = Math.floor(seconds / 60);
@@ -206,16 +237,24 @@ return (
             </div>
           </div>
   
-          {/* Middle - Big Cat */}
-          <div className="timer-cat">
-            {selectedCat && selectedCat.accessories.length > 0 && (
-              <img
-                src={`/grey_cream_cat/${selectedCat.accessories[0]}`}
-                alt={selectedCat.accessories[0]}
-                className="cat-accessory-img"
-              />
-            )}
-          </div>
+              {/* Middle - Big Cat */}
+              <div className="timer-cat">
+                {selectedCat && (
+                  <div className="big-cat-wrapper">
+                    <div className="cat-happiness">
+                      ❤️ {selectedCat.happiness}
+                    </div>
+                    {selectedCat.accessories.length > 0 && (
+                      <img
+                        src={`/grey_cream_cat/${selectedCat.accessories[0]}`}
+                        alt={selectedCat.accessories[0]}
+                        className="cat-accessory-img"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+
   
           {/* Right - Sidebar */}
           <div className="timer-sidebar">
@@ -240,13 +279,17 @@ return (
                       ) : (
                         <div className="cat-placeholder">{cat.name}</div>
                       )}
-  
+
+                      {/* Show name below the image */}
+                      <div className="cat-name-label">{cat.name}</div>
+
                       {!isUnlocked && (
                         <div className="lock-overlay">
                           <img src={lockIcon} alt="Locked" className="lock-icon" />
                         </div>
                       )}
                     </div>
+
                   </button>
                 );
               })}
