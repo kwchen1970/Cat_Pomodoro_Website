@@ -20,14 +20,16 @@ const Login = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
+      // 👇 Only redirect if auth check is done AND user still exists
+      if (!checkingAuth && user) {
         navigate("/home");
       } else {
         setCheckingAuth(false);
       }
     });
+  
     return unsubscribe;
-  }, [navigate]);
+  }, [navigate, checkingAuth]);
 
   const handleGoogleLogin = async () => {
     try {
