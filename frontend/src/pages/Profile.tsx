@@ -14,6 +14,7 @@ const ProfilePage = () => {
   const { user, checkingAuth } = useAuth();
   const navigate = useNavigate();
   const [cats, setCats] = useState<Cat[]>([]);
+  const [studyTime, setStudyTime] = useState(0);
 
   useEffect(() => {
     const fetchCats = async () => {
@@ -27,8 +28,8 @@ const ProfilePage = () => {
           unlockedIds = userData.unlocked || [];
   
         } else {
-          //Guest: get from localStorage
-          unlockedIds = JSON.parse(localStorage.getItem("guestUnlockedCats") || "[]");
+          //Guest: get from sessionStorage
+          unlockedIds = JSON.parse(sessionStorage.getItem("guestUnlockedCats") || "[]");
         }
   
         // Step 2: Fetch all cats and filter to unlocked
@@ -46,7 +47,19 @@ const ProfilePage = () => {
       fetchCats();
     }
   }, [checkingAuth, user]);
-  
+  useEffect(() => {
+    if (!checkingAuth && user?.uid) {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setStudyTime(data.hours_studied || 0);
+        })
+        .catch((err) => console.error("Failed to fetch study time", err));
+    } else {
+      const guestTime = parseFloat(sessionStorage.getItem("guestHoursStudied") || "0");
+      setStudyTime(guestTime);
+    }
+  }, [checkingAuth, user]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -90,6 +103,14 @@ const ProfilePage = () => {
     : defaultProfile;
   const displayName = fetchedName || user?.displayName || "Guest";
 
+  const formatStudyTime = (hours: number) => {
+    const totalSeconds = Math.floor(hours * 3600);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return `${h}h ${m}m ${s}s`;
+  };
+
   return (
     <div className="profile-container">
       <div className="sidebar">
@@ -101,7 +122,7 @@ const ProfilePage = () => {
             Cats
           </li>
           <li className={`menu-item ${activeTab === "study" ? "active-tab" : ""}`} onClick={() => setActiveTab("study")}>
-            Study Sessions
+            Study Time
           </li>
         </ul>
       </div>
@@ -154,14 +175,14 @@ const ProfilePage = () => {
               </div>
             </div>
           )}
-
-
-        {activeTab === "study" && (
-          <div>
-            <h2 className="readytext">Study Sessions</h2>
-            <p>Show study sessions here.</p>
-          </div>
-        )}
+          {activeTab === "study" && (
+            <div className="study-section">
+              <h2 className="readytext">Total Study Time</h2>
+              <div className="study-info-box">
+                <p className="study-time-value">{formatStudyTime(studyTime)}</p>
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );

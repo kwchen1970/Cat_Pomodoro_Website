@@ -3,6 +3,7 @@ import "./Timer.css";
 import { useAuth } from "../auth/AuthUserProvider";
 import lockIcon from "../assets/cute_lock.png";
 import timerBackground from "../assets/timerbackground.png";
+import { auth } from "../../firebase";
 
 export type Cat = {
   id: string;
@@ -25,6 +26,13 @@ const Timer = () => {
   const [unlockedCatIds, setUnlockedCatIds] = useState<string[]>([]);
   const [selectedCat, setSelectedCat] = useState<Cat | null>(null);
   const [heartAnimating, setHeartAnimating] = useState(false);
+  const [hoursStudied, setHoursStudied]= useState<number | null>(null);
+  const [secondsAccumulated, setSecondsAccumulated] = useState<number | null>(null);
+  const [initialHours, setInitialHours] = useState<number | null>(null);
+  const [isHoursLoaded, setIsHoursLoaded] = useState(false);
+  const [hoursLoadedForUid, setHoursLoadedForUid] = useState<string | null>(null);
+
+
   //clicking logic
   const handleCatClick = async () => {
     if (!selectedCat) return;
@@ -37,12 +45,12 @@ const Timer = () => {
     setSelectedCat(updatedCat);
   
     if (isGuest) {
-      // Update guest cat list and localStorage
+      // Update guest cat list and sessionStorage
       const updatedCats = cats.map(cat =>
         cat.id === selectedCat.id ? updatedCat : cat
       );
       setCats(updatedCats);
-      localStorage.setItem("guestCats", JSON.stringify(updatedCats));
+      sessionStorage.setItem("guestCats", JSON.stringify(updatedCats));
     } else {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cats`, {
@@ -61,10 +69,11 @@ const Timer = () => {
     setHeartAnimating(true);
     setTimeout(() => setHeartAnimating(false), 400); 
   };
+
   // Guest logic
   useEffect(() => {
     if (isGuest && cats.length > 0) {
-      const savedUnlocked = localStorage.getItem("guestUnlockedCats");
+      const savedUnlocked = sessionStorage.getItem("guestUnlockedCats");
       if (savedUnlocked) {
         try {
           const parsed = JSON.parse(savedUnlocked);
@@ -77,6 +86,12 @@ const Timer = () => {
       }
     }
   }, [isGuest, cats]);  // Wait for cats to be loaded
+
+  useEffect(() => {
+    if (isGuest && hoursStudied !== null) {
+      sessionStorage.setItem("guestHoursStudied", hoursStudied.toString());
+    }
+  }, [hoursStudied, isGuest]);
   
   
   // Timer logic
@@ -107,10 +122,10 @@ const Timer = () => {
                 lockedCats[Math.floor(Math.random() * lockedCats.length)];
           
               if (isGuest) {
-                // Save to localStorage
+                // Save to sessionStorage
                 const updated = [...unlockedCatIds, randomCat.id];
                 setUnlockedCatIds(updated);
-                localStorage.setItem("guestUnlockedCats", JSON.stringify(updated));
+                sessionStorage.setItem("guestUnlockedCats", JSON.stringify(updated));
               } else {
                 //Normal user logic
                 fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
@@ -129,12 +144,46 @@ const Timer = () => {
           
         } else {
           setTimeLeft(remaining);
+          setHoursStudied(prev => (prev ?? 0) + 1 / 3600);
+          setSecondsAccumulated(prev => (prev ?? 0) + 1);
         }
       }, 1000);
     }
-
     return () => clearInterval(interval);
   }, [isRunning, startTime, isBreak]);
+
+  //load in the hours_studied
+  useEffect(() => {
+    if (checkingAuth || !user) return;
+  
+    const fetchHours = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}`);
+        const data = await res.json();
+    
+        if (user.uid !== auth.currentUser?.uid) {
+          console.warn("Fetch race: loaded data doesn't match current user");
+          return;
+        }
+    
+        if (typeof data.hours_studied !== "number") {
+          console.warn("❌ Backend returned invalid hours_studied");
+          return;
+        }
+    
+        setHoursStudied(data.hours_studied);
+        setInitialHours(data.hours_studied);  // Track original value
+        setSecondsAccumulated(Math.floor(data.hours_studied * 3600));
+        setHoursLoadedForUid(user.uid);
+        setIsHoursLoaded(true);
+      } catch (err) {
+        console.error("Failed to fetch initial hours_studied:", err);
+      }
+    };
+    
+  
+    fetchHours();
+  }, [checkingAuth, user?.uid]);
 
 // 1. Fetch user data and unlocked cat IDs
 useEffect(() => {
@@ -178,6 +227,8 @@ useEffect(() => {
         // Simulate the end of a session
         setTimeLeft(0);
         setIsRunning(false);
+        setHoursStudied(prev => (prev ?? 0) + 1 / 3600);
+        setSecondsAccumulated(prev => (prev ?? 0) + 1);
       
         const nextBreakState = !isBreak;
         setIsBreak(nextBreakState);
@@ -193,7 +244,7 @@ useEffect(() => {
             if (!user) {
               const updated = [...unlockedCatIds, randomCat.id];
               setUnlockedCatIds(updated);
-              localStorage.setItem("guestUnlockedCats", JSON.stringify(updated));
+              sessionStorage.setItem("guestUnlockedCats", JSON.stringify(updated));
               console.log("Unlocked cat via demo key (guest):", randomCat.id);
             } else {
               fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}/unlocked`, {
@@ -217,6 +268,123 @@ useEffect(() => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [isBreak, user, cats, unlockedCatIds]);
   
+  //updates time studied to firestore
+  useEffect(() => {
+    if (
+      !user ||
+      checkingAuth ||
+      !isHoursLoaded ||
+      user.uid !== hoursLoadedForUid
+    ) {
+      return;
+    }
+  
+    const sendStudyTime = () => {
+      if (
+        hoursStudied === null ||
+        initialHours === null ||
+        hoursStudied < initialHours
+      ) {
+        console.warn("⛔️ Skipping update — study time is lower than backend value");
+        return;
+      }
+      if (
+        !user ||
+        checkingAuth ||
+        hoursStudied === null ||
+        secondsAccumulated === null ||
+        user.uid !== hoursLoadedForUid ||
+        auth.currentUser?.uid !== user.uid
+      ) {
+        console.warn("⛔️ Skipping update — not ready or UID mismatch");
+        return;
+      }
+  
+      const payload = JSON.stringify({
+        uid: user.uid,
+        hours_studied: hoursStudied,
+      });
+  
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+      }).catch((err) =>
+        console.error("Failed to update study time on visibility change:", err)
+      );
+    };
+  
+    const handleBeforeUnload = () => {
+      if (
+        hoursStudied === null ||
+        initialHours === null ||
+        hoursStudied < initialHours
+      ) {
+        console.warn("⛔️ Skipping update — study time is lower than backend value");
+        return;
+      }
+      if (
+        secondsAccumulated === 0 ||
+        !auth.currentUser ||
+        auth.currentUser.uid !== user.uid
+      ) {
+        return;
+      }
+      const calcHours = (secondsAccumulated ?? 0) / 3600;
+      if (
+        calcHours < (initialHours ?? 0)
+      ) {
+        console.warn(" Not sending — calculated study time is less than initial backend value");
+        return;
+      }
+      const payload = JSON.stringify({
+        uid: user.uid,
+        hours_studied: calcHours,
+      });
+  
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(
+          `${import.meta.env.VITE_API_BASE_URL}/api/users`,
+          new Blob([payload], { type: "application/json" })
+        );
+      } else {
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+          keepalive: true,
+        });
+      }
+    };
+  
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") sendStudyTime();
+    };
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    user?.uid,
+    checkingAuth,
+    isHoursLoaded,
+    hoursLoadedForUid,
+    secondsAccumulated,
+    hoursStudied,
+  ]);
+  
+
+  const toggleIsRunning = () => {
+    if (!isRunning) {
+      setStartTime(Date.now());
+      setTimeLeft(getInitialTime());
+    }
+    setIsRunning((prev) => !prev);
+  };
 
   const formatTime = (seconds: number) => {
     const min = Math.floor(seconds / 60);
@@ -229,14 +397,6 @@ useEffect(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const progress = Math.min(elapsed / getInitialTime(), 1);
     return progress;
-  };
-
-  const toggleIsRunning = () => {
-    if (!isRunning) {
-      setStartTime(Date.now());
-      setTimeLeft(getInitialTime());
-    }
-    setIsRunning((prev) => !prev);
   };
 
 return (
