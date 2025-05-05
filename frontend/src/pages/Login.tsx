@@ -41,6 +41,7 @@ const Login = () => {
         username: user.email?.split("@")[0] || `user_${user.uid}`,
         profile_pic: user.photoURL || "", // fallback if no image
         hours_studied: 0, // default starting value
+        unlocked: []
       };
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/auth_create`, {
         method: "POST",
