@@ -4,9 +4,10 @@
         "module": "CommonJS",
         "strict": true,
         "declaration": true,
-        "outDir": "./dist",
+        "outDir": "dist",
         "esModuleInterop": true,
-        "resolveJsonModule": true   
+        "resolveJsonModule": true,
+        "types": ["node"]
     },
-    "include": ["*.ts", "server.ts", "../frontend/src/firestoreUtils.ts"]
+    "include": ["server.ts","*.ts", "server.ts", "../frontend/src/firestoreUtils.ts"]
 }

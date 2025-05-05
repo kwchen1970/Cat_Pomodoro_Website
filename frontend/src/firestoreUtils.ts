@@ -25,6 +25,7 @@ try {
     username: doc.data().username,
     profile_pic: doc.data().profile_pic,
     hours_studied: doc.data().hours_studied,
+    unlocked: doc.data().unlocked,
     }));
 } catch (error) {
     console.error("Error fetching users:", error);
@@ -67,6 +68,7 @@ export const fetchUserById = async (uid: string): Promise<User | null> => {
       username: data.username,
       profile_pic: data.profile_pic,
       hours_studied: data.hours_studied,
+      unlocked: data.unlocked
     };
     return user;
   } catch (error) {
@@ -192,6 +194,7 @@ export const createUserIfNotExists = async (authUser: AuthUser) => {
       username: authUser.email?.split("@")[0] ?? "unknown",
       profile_pic: authUser.profile_pic ?? "",
       hours_studied: 0,
+      unlocked: []
     };
 
     await setDoc(userRef, newUser);

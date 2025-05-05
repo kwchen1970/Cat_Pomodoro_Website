@@ -1,33 +1,43 @@
 # Use Nginx base image
 FROM nginx:stable-alpine
 
-# Install Node 20
-RUN apk add --update nodejs npm
+# Install Node.js and npm
+RUN apk add --no-cache nodejs npm
 
-# Install pnpm
+# Install pnpm globally
 RUN npm install -g pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-# Set the working directory in the builder
+# Set working directory
 WORKDIR /app
 
-# Copy the entire monorepo and install dependencies and build
+# Copy all files
 COPY . .
+
+# Clean old installs, install fresh deps, build all packages
 RUN rm -rf node_modules **/node_modules
 RUN pnpm install
 RUN pnpm run build
 
-# Copy necessary build outputs and dependencies to nginx
+# Copy frontend output to Nginx public directory
 RUN cp -r ./frontend/dist/* /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose the port Nginx is running on
-EXPOSE 80
-EXPOSE 443
-
-# Install PM2
+# Install PM2 for running the backend server
 RUN npm install -g pm2
 
-# Use the start script as the entrypoint
-ENTRYPOINT ["./start.sh"]
+# Copy backend output (after build) to ensure it's available
+# Your build step must emit backend dist to /app/backend/dist
+# If not, make sure it does!
+RUN test -f /app/backend/dist/backend/server.js
+
+# Add and make start script executable
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Expose frontend and backend ports (if backend is reverse-proxied, 80 is enough)
+EXPOSE 80
+
+# Start Nginx and backend server
+ENTRYPOINT ["/start.sh"]

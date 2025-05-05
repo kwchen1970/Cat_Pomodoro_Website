@@ -1,64 +1,46 @@
-# flyctl launch added from .gitignore
-
-# dependencies
+# Ignore dependency folders
 **/node_modules
 **/.pnp
 **/.pnp.js
 
-# testing
+# Ignore test outputs
 **/coverage
 
-# build outputs
+# Ignore build outputs — we rebuild inside Docker
 **/.next
 **/out
 **/dist
 **/build
+**/dist-ssr
 
-# misc
+# Ignore system files and sensitive info
 **/.DS_Store
 **/*.pem
 
-# debug
+# Ignore logs and debug files
+**/*.log*
 **/npm-debug.log*
 **/yarn-debug.log*
 **/yarn-error.log*
+**/pnpm-debug.log*
+**/lerna-debug.log*
 
-# local env files
+# Ignore local environment files (except frontend one)
 **/.env
-**/.env.local
-**/.env.development.local
-**/.env.test.local
-**/.env.production.local
+**/.env.*.local
+!frontend/.env
 
-# turbo
+# Editor-specific files
+**/.idea
+**/.vscode/*
+!**/.vscode/extensions.json
+
+# Vercel and Turbo
+**/.vercel
 **/.turbo
 
-# vercel
-**/.vercel
-
-# flyctl launch added from frontend/.gitignore
-# Logs
-frontend/**/logs
-frontend/**/*.log
-frontend/**/npm-debug.log*
-frontend/**/yarn-debug.log*
-frontend/**/yarn-error.log*
-frontend/**/pnpm-debug.log*
-frontend/**/lerna-debug.log*
-
-frontend/**/node_modules
-frontend/**/dist
-frontend/**/dist-ssr
+# Local overrides
 frontend/**/*.local
 
-# Editor directories and files
-frontend/**/.vscode/*
-!frontend/**/.vscode/extensions.json
-frontend/**/.idea
-frontend/**/.DS_Store
-frontend/**/*.suo
-frontend/**/*.ntvs*
-frontend/**/*.njsproj
-frontend/**/*.sln
-frontend/**/*.sw?
+# Don't ignore this
 fly.toml

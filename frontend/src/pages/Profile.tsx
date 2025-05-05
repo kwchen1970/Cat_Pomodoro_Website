@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import "./Profile.css";
 import {Cat} from "@full-stack/types";
-import catBackground from "../assets/cats_backgrond.png";
-import studyBackground from "../assets/classroom_background.png";
-import profileBackground from "../assets/library_background.png";
+import catBackground from "../assets/cats_backgrond.webp";
+import studyBackground from "../assets/classroom_background.webp";
+import profileBackground from "../assets/library_background.webp";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");

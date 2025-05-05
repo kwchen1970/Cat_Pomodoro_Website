@@ -8,8 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import "../App.css"; // optional
 import "./Login.css";
-import peekingCat from "../assets/crouching.png" ;
-import loginBackground from "../assets/login_background.png";
+import peekingCat from "../assets/crouching.webp" ;
+import loginBackground from "../assets/login_background.webp";
 
 const provider = new GoogleAuthProvider();
 

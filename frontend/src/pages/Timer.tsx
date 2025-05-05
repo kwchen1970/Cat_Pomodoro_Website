@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import "./Timer.css";
 import { useAuth } from "../auth/AuthUserProvider";
-import lockIcon from "../assets/cute_lock.png";
-import timerBackground from "../assets/timerbackground.png";
+import lockIcon from "../assets/cute_lock.webp";
+import timerBackground from "../assets/timerbackground.webp";
 import { auth } from "../../firebase";
 
 export type Cat = {

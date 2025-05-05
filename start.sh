@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# pm2 start /app/backend/dist/server.js
-node /app/backend/dist/server.js &
+# Start the backend in the background
+node /app/backend/dist/backend/server.js &
 
-nginx -g "daemon off;"
+# Start nginx in foreground
+exec nginx -g "daemon off;"
