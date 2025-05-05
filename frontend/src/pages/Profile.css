@@ -9,12 +9,12 @@
   .profile-container {
     display: flex;
     height: 100vh;
+    width: 100vw; 
   }
-  
-  /* Sidebar - fixed left 25% width */
+
   .sidebar {
     width: 15%;
-    background-color: #dad3ba; /* Tailwind's gray-100 */
+    background-color: #f8e5d4;
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -38,11 +38,11 @@
     font-weight: 600;
   }
   
-  /* Right 75% content area */
   .profile-right {
-    width: 75%;
+    flex: 1; 
     padding: 2rem;
     overflow-y: auto;
+    position: relative; 
   }
   
   /* Reuse from earlier */
@@ -107,4 +107,41 @@
   
   .delete-button:hover {
     background-color: #e63946;
+  }
+  .email-text, .uid-text {
+    font-family: 'QuickSand';
+    font-size: 1rem;
+    color: #555;
+    margin: 4px 0;
+  }
+  .cat-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .cat-card_profile {
+    width: 120px;
+    text-align: center;
+  }
+  
+  .cat-image_profile {
+    width: 150px;    /* or try 200px for even bigger */
+    height: auto;    /* maintains aspect ratio */
+    border-radius: 12px;
+    object-fit: contain;
+  }
+  
+  .cat-name_profile {
+    margin-top: 8px;
+    font-weight: bold;
+  }
+  .cats-section {
+    padding: 2rem;
+  }
+  
+  .cats-foreground {
+    position: relative;
+    z-index: 1; 
+    padding: 2rem;
   }

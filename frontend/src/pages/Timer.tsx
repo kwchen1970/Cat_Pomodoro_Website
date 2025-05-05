@@ -24,6 +24,43 @@ const Timer = () => {
   const [cats, setCats] = useState<Cat[]>([]);
   const [unlockedCatIds, setUnlockedCatIds] = useState<string[]>([]);
   const [selectedCat, setSelectedCat] = useState<Cat | null>(null);
+  const [heartAnimating, setHeartAnimating] = useState(false);
+  //clicking logic
+  const handleCatClick = async () => {
+    if (!selectedCat) return;
+  
+    const updatedCat = {
+      ...selectedCat,
+      happiness: selectedCat.happiness + 1
+    };
+  
+    setSelectedCat(updatedCat);
+  
+    if (isGuest) {
+      // Update guest cat list and localStorage
+      const updatedCats = cats.map(cat =>
+        cat.id === selectedCat.id ? updatedCat : cat
+      );
+      setCats(updatedCats);
+      localStorage.setItem("guestCats", JSON.stringify(updatedCats));
+    } else {
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cats`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedCat),
+        });
+  
+        setCats(prev =>
+          prev.map(cat => (cat.id === selectedCat.id ? updatedCat : cat))
+        );
+      } catch (err) {
+        console.error("Failed to update cat happiness:", err);
+      }
+    }
+    setHeartAnimating(true);
+    setTimeout(() => setHeartAnimating(false), 400); 
+  };
   // Guest logic
   useEffect(() => {
     if (isGuest && cats.length > 0) {
@@ -241,7 +278,7 @@ return (
               <div className="timer-cat">
                 {selectedCat && (
                   <div className="big-cat-wrapper">
-                    <div className="cat-happiness">
+                    <div className={`cat-happiness ${heartAnimating ? "heart-bounce" : ""}`}>
                       ❤️ {selectedCat.happiness}
                     </div>
                     {selectedCat.accessories.length > 0 && (
@@ -249,6 +286,8 @@ return (
                         src={`/grey_cream_cat/${selectedCat.accessories[0]}`}
                         alt={selectedCat.accessories[0]}
                         className="cat-accessory-img"
+                        onClick={handleCatClick}
+                        style={{ cursor: "pointer" }}
                       />
                     )}
                   </div>

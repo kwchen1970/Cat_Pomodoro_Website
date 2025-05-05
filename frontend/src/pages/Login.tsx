@@ -20,7 +20,6 @@ const Login = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // 👇 Only redirect if auth check is done AND user still exists
       if (!checkingAuth && user) {
         navigate("/home");
       } else {

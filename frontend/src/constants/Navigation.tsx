@@ -1,4 +1,3 @@
-import Counter from "../pages/Counter";
 import Home from "../pages/Home";
 import Timer from "../pages/Timer";
 import Profile from "../pages/Profile";
@@ -22,11 +21,6 @@ export const PATHS: {
     label: string;
     element?: JSX.Element;
 }[] = [
-    {
-        link: "/counter",
-        label: "Counter",
-        element: <Counter />,
-    },
     {
         link: "/timer",
         label: "Timer",

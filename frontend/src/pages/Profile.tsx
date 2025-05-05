@@ -4,6 +4,8 @@ import defaultProfile from "../assets/defaultProfile.png";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import "./Profile.css";
+import {Cat} from "@full-stack/types";
+import catBackground from "../assets/cats_backgrond.png";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -11,6 +13,40 @@ const ProfilePage = () => {
   const [fetchedPhoto, setFetchedPhoto] = useState<string | null>(null);
   const { user, checkingAuth } = useAuth();
   const navigate = useNavigate();
+  const [cats, setCats] = useState<Cat[]>([]);
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        let unlockedIds: string[] = [];
+  
+        if (user?.uid) {
+          // Fetch user object to get `unlocked` cat IDs
+          const userRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user.uid}`);
+          const userData = await userRes.json();
+          unlockedIds = userData.unlocked || [];
+  
+        } else {
+          //Guest: get from localStorage
+          unlockedIds = JSON.parse(localStorage.getItem("guestUnlockedCats") || "[]");
+        }
+  
+        // Step 2: Fetch all cats and filter to unlocked
+        const catRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cats`);
+        const allCats = await catRes.json();
+        const filteredCats = allCats.filter((cat: Cat) => unlockedIds.includes(cat.id));
+  
+        setCats(filteredCats);
+      } catch (error) {
+        console.error("Failed to fetch cats:", error);
+      }
+    };
+  
+    if (!checkingAuth) {
+      fetchCats();
+    }
+  }, [checkingAuth, user]);
+  
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -20,7 +56,7 @@ const ProfilePage = () => {
         setFetchedName(data.name);
         setFetchedPhoto(data.photoURL);
       } catch (error) {
-        console.error("❌ Failed to fetch user data:", error);
+        console.error("Failed to fetch user data:", error);
       }
     };
 
@@ -70,11 +106,25 @@ const ProfilePage = () => {
         </ul>
       </div>
 
-      <div className="profile-right">
+      <div
+        className="profile-right"
+        style={
+          activeTab === "cats"
+            ? {
+              backgroundImage: `linear-gradient(rgba(255, 248, 225, 0.7), rgba(255, 248, 225, 0.7)), url(${catBackground})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat"
+              }
+            : {}
+        }
+      >
         {activeTab === "profile" && (
           <div className="profile-left">
             <img src={profilePic} alt="Profile" className="profile-pic" />
             <h1 className="readytext">{displayName}</h1>
+              <p className="email-text">Email: {user?.email}</p>
+              <p className="uid-text">UID: {user?.uid}</p>
 
             {user?.uid && (
               <button className="delete-button" onClick={handleDeleteAccount}>
@@ -83,13 +133,28 @@ const ProfilePage = () => {
             )}
           </div>
         )}
+         {activeTab === "cats" && (
+            <div className="cats-foreground">
+              <h2 className="readytext">Cats</h2>
+              <div className="cat-grid_profile">
+                {cats.length === 0 ? (
+                  <p>No cats found.</p>
+                ) : (
+                  cats.map((cat) => (
+                    <div key={cat.id} className="cat-card_profile">
+                      <img
+                        src={`/grey_cream_cat/${cat.accessories[0]}`}
+                        alt={cat.accessories[0]}
+                        className="cat-image_profile"
+                      />
+                      <p className="cat-name_profile">{cat.name}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
 
-        {activeTab === "cats" && (
-          <div>
-            <h2 className="readytext">Cats</h2>
-            <p>Show cat-related data here.</p>
-          </div>
-        )}
 
         {activeTab === "study" && (
           <div>
