@@ -6,6 +6,8 @@ import { auth } from "../../firebase";
 import "./Profile.css";
 import {Cat} from "@full-stack/types";
 import catBackground from "../assets/cats_backgrond.png";
+import studyBackground from "../assets/classroom_background.png";
+import profileBackground from "../assets/library_background.png";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -110,6 +112,27 @@ const ProfilePage = () => {
     const s = totalSeconds % 60;
     return `${h}h ${m}m ${s}s`;
   };
+  
+const tabStyles: Record<string, React.CSSProperties> = {
+  cats: {
+    backgroundImage: `linear-gradient(rgba(255, 248, 225, 0.7), rgba(255, 248, 225, 0.7)), url(${catBackground})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  },
+  study: {
+    backgroundImage: `linear-gradient(rgba(235, 250, 255, 0.7), rgba(235, 250, 255, 0.7)), url(${studyBackground})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  },
+  profile: {
+    backgroundImage: `linear-gradient(to bottom,rgba(255, 240, 245, 0.98), rgba(255, 240, 245, 0.8)), url(${profileBackground})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  },
+};
 
   return (
     <div className="profile-container">
@@ -129,16 +152,7 @@ const ProfilePage = () => {
 
       <div
         className="profile-right"
-        style={
-          activeTab === "cats"
-            ? {
-              backgroundImage: `linear-gradient(rgba(255, 248, 225, 0.7), rgba(255, 248, 225, 0.7)), url(${catBackground})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat"
-              }
-            : {}
-        }
+          style={tabStyles[activeTab] ?? {}}
       >
         {activeTab === "profile" && (
           <div className="profile-left">
