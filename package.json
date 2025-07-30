@@ -22,5 +22,10 @@
         "firebase": "^11.6.0",
         "firebase-admin": "^13.2.0",
         "node-fetch": "^3.3.2"
+    },
+    "pnpm": {
+    "overrides": {
+        "linkifyjs": "4.3.2"
+    }  
     }
 }
