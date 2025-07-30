@@ -25,5 +25,4 @@
         "dev": "nodemon server.ts",
         "build": "tsc"
     }
-    
 }  
